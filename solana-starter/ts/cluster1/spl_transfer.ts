@@ -40,7 +40,7 @@ const to = new PublicKey("3CcytkqAqFwi6VTNcdcUtF4x5KAm7NQdA6g2ZWQVAu3F");
             fromAta.address,
             toAta.address,
             keypair,
-            5
+            5e6
         );
     } catch(e) {
         console.error(`Oops, something went wrong: ${e}`)
