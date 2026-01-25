@@ -1,5 +1,5 @@
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults"
-import { createSignerFromKeypair, signerIdentity, generateSigner, percentAmount } from "@metaplex-foundation/umi"
+import { createSignerFromKeypair, signerIdentity, generateSigner, percentAmount, AmountMismatchError } from "@metaplex-foundation/umi"
 import { createNft, mplTokenMetadata } from "@metaplex-foundation/mpl-token-metadata";
 
 import wallet from "../turbin3-wallet.json"
@@ -16,11 +16,18 @@ umi.use(mplTokenMetadata())
 const mint = generateSigner(umi);
 
 (async () => {
-    // let tx = ???
-    // let result = await tx.sendAndConfirm(umi);
-    // const signature = base58.encode(result.signature);
+     let tx = createNft(umi, {
+        mint,
+        name: "Touareg NFT",
+        symbol: "TGR",
+        uri: "https://gateway.irys.xyz/GG2LwgVq5qtygXUkELTxfqenSwraYR7Qhj9hEpUEcKjS", // Replace with your metadata URI
+        sellerFeeBasisPoints: percentAmount(5),
+    });
+
+    let result = await tx.sendAndConfirm(umi);
+    const signature = base58.encode(result.signature);
     
-    // console.log(`Succesfully Minted! Check out your TX here:\nhttps://explorer.solana.com/tx/${signature}?cluster=devnet`)
+    console.log(`Succesfully Minted! Check out your TX here:\nhttps://explorer.solana.com/tx/${signature}?cluster=devnet`)
 
     console.log("Mint Address: ", mint.publicKey);
 })();

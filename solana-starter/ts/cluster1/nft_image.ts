@@ -10,7 +10,7 @@ const umi = createUmi('https://api.devnet.solana.com');
 let keypair = umi.eddsa.createKeypairFromSecretKey(new Uint8Array(wallet));
 const signer = createSignerFromKeypair(umi, keypair);
 
-umi.use(irysUploader());
+umi.use(irysUploader({ address: 'https://devnet.irys.xyz' }));
 umi.use(signerIdentity(signer));
 
 (async () => {
@@ -18,11 +18,20 @@ umi.use(signerIdentity(signer));
         //1. Load image
         //2. Convert image to generic file.
         //3. Upload image
+        const imageFile = await readFile('ComfyUI_00188_.png');
 
-        // const image = ???
 
-        // const [myUri] = ??? 
-        // console.log("Your image URI: ", myUri);
+        const image = await createGenericFile(
+            imageFile,
+            'beautiful_landscape.png',
+            {
+                contentType: 'image/png',
+                displayName: 'Beautiful Landscape'
+            }
+        );
+
+        const [myUri] = await umi.uploader.upload([image]);
+        console.log("Your image URI: ", myUri);
     }
     catch(error) {
         console.log("Oops.. Something went wrong", error);
