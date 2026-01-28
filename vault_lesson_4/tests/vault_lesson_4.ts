@@ -87,4 +87,59 @@ describe("vault_lesson_4", () => {
     });
   });
 
+  describe("after withdrawing SOL from the vault", async () => {
+    it("the SOL amount is transfered from vault to user", async () => {
+      const withdrawAmount = 0.5 * anchor.web3.LAMPORTS_PER_SOL; // 0.5 SOL
+
+      const initialVaultBalance = await provider.connection.getBalance(vaultPda);
+      const initialUserBalance = await provider.connection.getBalance(user);
+
+      await program.methods
+        .withdraw(new anchor.BN(withdrawAmount))
+        .accountsStrict({
+          user: user,
+          vault: vaultPda,
+          vaultState: vaultStatePda,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .rpc();
+
+      const finalVaultBalance = await provider.connection.getBalance(vaultPda);
+      const finalUserBalance = await provider.connection.getBalance(user);
+
+      expect(initialVaultBalance - finalVaultBalance).to.equal(withdrawAmount);
+      expect(finalUserBalance - initialUserBalance - withdrawAmount).to.equal(-5000);
+    });
+  });
+
+  describe("after closing the vault", async () => {
+    it("The rent-exempt amounts are transfered back to the user", async () => {
+      const initialVaultBalance = await provider.connection.getBalance(vaultPda);
+      const initialVaultStateBalance = await provider.connection.getBalance(vaultStatePda);
+      const initialUserBalance = await provider.connection.getBalance(user);
+
+      await program.methods
+        .close()
+        .accountsStrict({
+          user: user,
+          vault: vaultPda,
+          vaultState: vaultStatePda,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .rpc();
+
+      const finalUserBalance = await provider.connection.getBalance(user);
+
+      // Vault should be 0
+      expect(await provider.connection.getBalance(vaultPda)).to.equal(0);
+
+      // VaultState should be closed (null)
+      const vaultStateInfo = await provider.connection.getAccountInfo(vaultStatePda);
+      expect(vaultStateInfo).to.be.null;
+
+      // User gets back the remaining balance - fees
+      expect(finalUserBalance).to.equal(initialUserBalance + initialVaultBalance + initialVaultStateBalance - 5000);
+    });
+  });
+
 });
