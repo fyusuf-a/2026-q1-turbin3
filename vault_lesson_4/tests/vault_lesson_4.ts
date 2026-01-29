@@ -3,6 +3,10 @@ import { Program } from "@coral-xyz/anchor";
 import { VaultLesson4 } from "../target/types/vault_lesson_4";
 import { expect } from "chai";
 
+const publicKeyToUrl = (key: anchor.web3.PublicKey) => {
+  return "https://explorer.solana.com/address/" + key.toBase58() + "?cluster=custom&customUrl=http%3A%2F%2Flocalhost%3A8899";
+}
+
 describe("vault_lesson_4", () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
@@ -17,10 +21,14 @@ describe("vault_lesson_4", () => {
     program.programId
   );
 
+  console.log(`See vaultStatePda: ${publicKeyToUrl(vaultStatePda)}`);
+
   const [vaultPda, vaultBump] = anchor.web3.PublicKey.findProgramAddressSync(
     [Buffer.from("vault"), vaultStatePda.toBuffer()],
     program.programId
   );
+
+  console.log(`See vaultPda: ${publicKeyToUrl(vaultPda)}`);
 
   before(async () => {
     // Airdrop for fees

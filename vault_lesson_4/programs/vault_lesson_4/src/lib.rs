@@ -29,6 +29,9 @@ pub struct Initialize<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
 
+    // -> pda (derived from seeds)
+    // -> owned by my program : the program can change the data + amount of lamports
+    // -> authority : my program
     #[account(
         init,
         payer = user,
@@ -38,12 +41,15 @@ pub struct Initialize<'info> {
     )]
     pub vault_state: Account<'info, VaultState>,
 
+    // -> pda (derived from seeds)
+    // -> owned by system program : the system program could change the data + amount of lamports
+    // -> authority : my program
     #[account(
         mut,
         seeds = [b"vault", vault_state.key().as_ref()],
         bump,
     )]
-    pub vault: SystemAccount<'info>,
+    pub vault: SystemAccount<'info>, // owner system program + no data
     pub system_program: Program<'info, System>
 }
 
