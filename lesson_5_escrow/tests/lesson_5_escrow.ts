@@ -80,9 +80,7 @@ describe("lesson_5_escrow", () => {
     takerAtaB = results[1].ata;
   });
 
-
   describe("after initializing the vault", async () => {
-
     before(async () => {
       [escrowPda, escrowBump] = await anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from("escrow"), maker.toBuffer(), seed.toArrayLike(Buffer, "le", 8)],
@@ -106,10 +104,9 @@ describe("lesson_5_escrow", () => {
           systemProgram: anchor.web3.SystemProgram.programId,
         })
         .rpc();
-      console.log('oki');
     });
 
-    it("sets up the escrow account correctly", async () => {
+    it("it sets up the escrow account correctly", async () => {
       const escrowAccount = await program.account.escrow.fetch(escrowPda);
       expect(escrowAccount.seed.toString()).to.equal(seed.toString());
       expect(escrowAccount.maker.toBase58()).to.equal(maker.toBase58());
@@ -118,9 +115,34 @@ describe("lesson_5_escrow", () => {
       expect(escrowAccount.bump).to.equal(escrowBump);
     });
 
-    it("transfers the tokens to the vault", async () => {
+    it("it transfers the tokens to the vault", async () => {
       const vaultAccount = await program.provider.connection.getTokenAccountBalance(vault);
       expect(vaultAccount.value.uiAmount).to.equal(depositAmount);
+    });
+  });
+
+  describe("after refunding the escrow", async () => {
+    it("it transfers the tokens to the maker", async () => {
+      // Refund
+      await program.methods
+        .refund()
+        .accountsStrict({
+          maker: maker,
+          mintA: mintA,
+          makerAtaA: makerAtaA,
+          escrow: escrowPda,
+          vault: vault,
+          tokenProgramA: TOKEN_PROGRAM_ID,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .rpc();
+
+      // Check closed
+      const escrowInfo = await provider.connection.getAccountInfo(escrowPda);
+      expect(escrowInfo).to.be.null;
+
+      const vaultInfo = await provider.connection.getAccountInfo(vault);
+      expect(vaultInfo).to.be.null;
     });
   });
 });
