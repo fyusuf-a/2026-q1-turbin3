@@ -1,9 +1,9 @@
 use anchor_lang::{prelude::*, system_program::{Transfer, transfer}};
 
-declare_id!("GDLBo1Pnwt5YDCzQP6GTVFHJ27fdFYqQKxezT28m9g79");
+declare_id!("9mD6HSyKeX673CZowppfX7EazqrhomGGCLdzSm846Gn6");
 
 #[program]
-pub mod vault_lesson_4 {
+pub mod lesson_4_vault {
     use super::*;
 
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {

@@ -1,5 +1,5 @@
 ################################################################
-# Manage vault_lesson_4 deployment through Crypto Infrastructure as Code
+# Manage lesson_4_vault deployment through Crypto Infrastructure as Code
 ################################################################
 
 addon "svm" {
@@ -7,9 +7,9 @@ addon "svm" {
     network_id = input.network_id
 }
 
-action "deploy_vault_lesson_4" "svm::deploy_program" {
-    description = "Deploy vault_lesson_4 program"
-    program = svm::get_program_from_anchor_project("vault_lesson_4") 
+action "deploy_lesson_4_vault" "svm::deploy_program" {
+    description = "Deploy lesson_4_vault program"
+    program = svm::get_program_from_anchor_project("lesson_4_vault") 
     authority = signer.authority
     payer = signer.payer
     // Optional: if you want to deploy the program via a cheatcode when targeting a Surfnet, set `instant_surfnet_deployment = true`

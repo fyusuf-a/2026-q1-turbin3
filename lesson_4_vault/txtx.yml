@@ -1,6 +1,6 @@
 ---
-name: vault_lesson_4
-id: vaultlesson4
+name: lesson_4_vault
+id: lesson4vault
 runbooks:
   - name: deployment
     description: Deploy programs

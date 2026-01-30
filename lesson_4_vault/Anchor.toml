@@ -6,7 +6,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-vault_lesson_4 = "GDLBo1Pnwt5YDCzQP6GTVFHJ27fdFYqQKxezT28m9g79"
+lesson_4_vault = "GDLBo1Pnwt5YDCzQP6GTVFHJ27fdFYqQKxezT28m9g79"
 
 [registry]
 url = "https://api.apr.dev"

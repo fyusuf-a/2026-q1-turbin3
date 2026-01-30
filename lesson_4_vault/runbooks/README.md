@@ -1,4 +1,4 @@
-# vault_lesson_4 Runbooks
+# lesson_4_vault Runbooks
 
 [![Surfpool](https://img.shields.io/badge/Operated%20with-Surfpool-gree?labelColor=gray)](https://surfpool.run)
 

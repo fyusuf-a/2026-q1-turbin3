@@ -1,18 +1,18 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
-import { VaultLesson4 } from "../target/types/vault_lesson_4";
+import { Lesson4Vault } from "../target/types/lesson_4_vault";
 import { expect } from "chai";
 
 const publicKeyToUrl = (key: anchor.web3.PublicKey) => {
   return "https://explorer.solana.com/address/" + key.toBase58() + "?cluster=custom&customUrl=http%3A%2F%2Flocalhost%3A8899";
 }
 
-describe("vault_lesson_4", () => {
+describe("lesson_4_vault", () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
-  const program = anchor.workspace.vaultLesson4 as Program<VaultLesson4>;
+  const program = anchor.workspace.lesson4Vault as Program<Lesson4Vault>;
   const user = provider.wallet.publicKey;
 
   // Derive PDAs
