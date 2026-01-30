@@ -43,10 +43,8 @@ pub struct Refund<'info> {
 
 impl<'info> Refund<'info> {
     pub fn refund(&mut self) -> Result<()> {
-        //let deposited_amount = self.vault.to_account_info().lamports();
-
         let cpi_program = self.token_program_a.to_account_info();
-        let cpi_accounts = TransferChecked{
+        let cpi_accounts = TransferChecked {
             from: self.vault.to_account_info(),
             to: self.maker_ata_a.to_account_info(),
             mint: self.mint_a.to_account_info(),
@@ -74,5 +72,22 @@ impl<'info> Refund<'info> {
 
         let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
         close_account(cpi_ctx)
+
+        // to replace close = maker
+        //let mut data = self.escrow.to_account_info().data.borrow_mut();
+        //data.fill(0);
+
+        //let amount: u64 = self.escrow.get_lamports();
+        //self.escrow.sub_lamports(amount);
+        //self.maker.add_lamports(amount);
+        // or --->
+        //**self.escrow.to_account_info().try_borrow_mut_lamports()? =
+            //self.escrow.to_account_info().get_lamports()
+                //.checked_sub(amount)
+                //.ok_or(ProgramError::ArithmeticOverflow)?;
+        //**self.maker.try_borrow_mut_lamports()? = self.maker.to_account_info().get_lamports()
+                //.checked_add(amount)
+                //.ok_or(ProgramError::ArithmeticOverflow)?;
+        //Ok(())
     }
 }
