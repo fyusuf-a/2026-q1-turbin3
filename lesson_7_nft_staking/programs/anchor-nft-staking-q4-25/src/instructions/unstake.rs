@@ -59,7 +59,7 @@ use crate::{
  }
 
  impl<'info> Unstake<'info> {
-     pub fn unstake(&mut self, bumps: &UnstakeBumps) -> Result<()> {
+     pub fn unstake(&mut self) -> Result<()> {
         let time_elapsed = Clock::get()?.unix_timestamp - self.stake_account.staked_at;
         const SECONDS_IN_DAY: i64 = 24 * 60 * 60;
         let days_elapsed = u32::try_from(time_elapsed / SECONDS_IN_DAY)?;
