@@ -81,7 +81,7 @@ describe("lesson_5_escrow", () => {
     takerAtaB = results[1].ata;
   });
 
-  /*describe("after initializing the vault", async () => {
+  describe("after initializing the vault", async () => {
     before(async () => {
       [escrowPda, escrowBump] = anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from("escrow"), maker.toBuffer(), seed.toArrayLike(Buffer, "le", 8)],
@@ -118,9 +118,9 @@ describe("lesson_5_escrow", () => {
       const vaultAccount = await program.provider.connection.getTokenAccountBalance(vault);
       expect(vaultAccount.value.uiAmount).to.equal(depositAmount);
     });
-  });*/
+  });
 
-  /*describe("when refunding the escrow", async () => {
+  describe("when refunding the escrow", async () => {
     it("it transfers the tokens to the maker", async () => {
       // Refund
       await program.methods
@@ -143,7 +143,7 @@ describe("lesson_5_escrow", () => {
       const vaultInfo = await provider.connection.getAccountInfo(vault);
       expect(vaultInfo).to.be.null;
     });
-  });*/
+  });
 
   describe("When taking the escrow", async () => {
 
@@ -174,18 +174,7 @@ describe("lesson_5_escrow", () => {
 
       // Setup for take
       takerAtaA = getAssociatedTokenAddressSync(mintA, taker.publicKey);
-      console.log("Taker ATA A:", takerAtaA.toBase58());
       makerAtaB = getAssociatedTokenAddressSync(mintB, maker);
-      console.log("Maker ATA B:", makerAtaB.toBase58());
-      const ataTxA = new anchor.web3.Transaction().add(
-        createAssociatedTokenAccountInstruction(taker.publicKey, takerAtaA, taker.publicKey, mintA)
-      );
-      await provider.sendAndConfirm(ataTxA, [taker]);
-
-      const ataTxB = new anchor.web3.Transaction().add(
-        createAssociatedTokenAccountInstruction(taker.publicKey, makerAtaB, maker, mintB)
-      );
-      await provider.sendAndConfirm(ataTxB, [taker]);
 
       // Take
       await program.methods
@@ -195,7 +184,7 @@ describe("lesson_5_escrow", () => {
           maker: maker,
           mintA: mintA,
           mintB: mintB,
-          //makerAtaB,
+          makerAtaB: makerAtaB,
           takerAtaA: takerAtaA,
           takerAtaB: takerAtaB,
           escrow: escrowPda,

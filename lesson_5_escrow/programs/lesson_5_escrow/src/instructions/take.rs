@@ -17,16 +17,14 @@ pub struct Take<'info> {
     #[account(mint::token_program = token_program_b)]
     pub mint_b: InterfaceAccount<'info, Mint>,
 
-    /*#[account(
-        mut,
-        //init_if_needed,
-        //payer = taker,
+    #[account(
+        init_if_needed,
+        payer = taker,
         associated_token::mint = mint_b,
         associated_token::authority = maker,
-        associated_token::token_program = token_program_b,
+        associated_token::token_program = token_program_a,
     )]
-    pub maker_ata_b: InterfaceAccount<'info, TokenAccount>,
-    */
+    pub maker_ata_b: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         init_if_needed,
@@ -35,7 +33,7 @@ pub struct Take<'info> {
         associated_token::authority = taker,
         associated_token::token_program = token_program_a,
     )]
-    pub taker_ata_a: InterfaceAccount<'info, TokenAccount>,
+    pub taker_ata_a: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         mut,
@@ -74,10 +72,7 @@ pub struct Take<'info> {
 
 impl<'info> Take<'info> {
     pub fn take(&mut self) -> Result<()> {
-        msg!("kikou!");
-
         // send token A from vault to taker
-        /*
         let cpi_program = self.token_program_a.to_account_info();
         
         let cpi_accounts = TransferChecked {
@@ -119,8 +114,6 @@ impl<'info> Take<'info> {
         };
 
         let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
-        close_account(cpi_ctx)*/
-
-        Ok(())
+        close_account(cpi_ctx)
     }
 }
