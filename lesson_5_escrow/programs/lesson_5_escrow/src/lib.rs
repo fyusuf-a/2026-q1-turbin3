@@ -21,6 +21,10 @@ pub mod lesson_5_escrow {
     pub fn refund(ctx: Context<Refund>) -> Result<()> {
         ctx.accounts.refund()
     }
+
+    pub fn take(ctx: Context<Take>) -> Result<()> {
+        ctx.accounts.take()
+    }
 }
 
 #[derive(Accounts)]

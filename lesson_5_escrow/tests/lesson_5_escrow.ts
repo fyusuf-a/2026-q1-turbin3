@@ -52,6 +52,7 @@ describe("lesson_5_escrow", () => {
   let takerAtaA: anchor.web3.PublicKey;
 
   const seed = new anchor.BN(1234);
+  const seed2 = new anchor.BN(2222);
   let escrowPda: anchor.web3.PublicKey;
   let escrowBump: number;
   let vault: anchor.web3.PublicKey;
@@ -80,17 +81,15 @@ describe("lesson_5_escrow", () => {
     takerAtaB = results[1].ata;
   });
 
-  describe("after initializing the vault", async () => {
+  /*describe("after initializing the vault", async () => {
     before(async () => {
-      [escrowPda, escrowBump] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [escrowPda, escrowBump] = anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from("escrow"), maker.toBuffer(), seed.toArrayLike(Buffer, "le", 8)],
         program.programId
       );
       vault = getAssociatedTokenAddressSync(mintA, escrowPda, true);
 
-
-      // Add your test here.
-      const tx = await program.methods.make(seed,  new anchor.BN(depositAmount), new anchor.BN(receiveAmount))
+      await program.methods.make(seed,  new anchor.BN(depositAmount), new anchor.BN(receiveAmount))
         .accountsStrict({
           maker,
           mintA,
@@ -119,9 +118,9 @@ describe("lesson_5_escrow", () => {
       const vaultAccount = await program.provider.connection.getTokenAccountBalance(vault);
       expect(vaultAccount.value.uiAmount).to.equal(depositAmount);
     });
-  });
+  });*/
 
-  describe("after refunding the escrow", async () => {
+  /*describe("when refunding the escrow", async () => {
     it("it transfers the tokens to the maker", async () => {
       // Refund
       await program.methods
@@ -144,5 +143,92 @@ describe("lesson_5_escrow", () => {
       const vaultInfo = await provider.connection.getAccountInfo(vault);
       expect(vaultInfo).to.be.null;
     });
+  });*/
+
+  describe("When taking the escrow", async () => {
+
+    before(async () => {
+      [escrowPda, escrowBump] = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("escrow"), maker.toBuffer(), seed2.toArrayLike(Buffer, "le", 8)],
+        program.programId
+      );
+      vault = getAssociatedTokenAddressSync(mintA, escrowPda, true);
+
+      // Make (again for take path)
+      await program.methods
+        .make(seed2, new anchor.BN(depositAmount), new anchor.BN(receiveAmount))
+        .accountsStrict({
+          maker: maker,
+          mintA: mintA,
+          mintB: mintB,
+          makerAtaA: makerAtaA,
+          escrow: escrowPda,
+          vault: vault,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          tokenProgramA: TOKEN_PROGRAM_ID,
+          tokenProgramB: TOKEN_PROGRAM_ID,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .rpc();
+
+
+      // Setup for take
+      takerAtaA = getAssociatedTokenAddressSync(mintA, taker.publicKey);
+      console.log("Taker ATA A:", takerAtaA.toBase58());
+      makerAtaB = getAssociatedTokenAddressSync(mintB, maker);
+      console.log("Maker ATA B:", makerAtaB.toBase58());
+      const ataTxA = new anchor.web3.Transaction().add(
+        createAssociatedTokenAccountInstruction(taker.publicKey, takerAtaA, taker.publicKey, mintA)
+      );
+      await provider.sendAndConfirm(ataTxA, [taker]);
+
+      const ataTxB = new anchor.web3.Transaction().add(
+        createAssociatedTokenAccountInstruction(taker.publicKey, makerAtaB, maker, mintB)
+      );
+      await provider.sendAndConfirm(ataTxB, [taker]);
+
+      // Take
+      await program.methods
+        .take()
+        .accountsStrict({
+          taker: taker.publicKey,
+          maker: maker,
+          mintA: mintA,
+          mintB: mintB,
+          //makerAtaB,
+          takerAtaA: takerAtaA,
+          takerAtaB: takerAtaB,
+          escrow: escrowPda,
+          vault: vault,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          tokenProgramA: TOKEN_PROGRAM_ID,
+          tokenProgramB: TOKEN_PROGRAM_ID,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .signers([taker])
+        .rpc();
+    });
+
+    // Check closed
+    it("it closes the escrow", async () => {
+      const escrowInfo = await provider.connection.getAccountInfo(escrowPda);
+      expect(escrowInfo).to.be.null;
+    });
+
+    it("it closes the vault", async () => {
+      const vaultInfo = await provider.connection.getAccountInfo(vault);
+      expect(vaultInfo).to.be.null;
+    });
+
+    it("it transfers token A to the taker", async () => {
+      const takerBalanceA = (await provider.connection.getTokenAccountBalance(takerAtaA)).value.uiAmount;
+      expect(takerBalanceA).to.equal(depositAmount);
+    });
+
+    it("it transfers token B to the maker", async () => {
+      const makerBalanceB = (await provider.connection.getTokenAccountBalance(makerAtaB)).value.uiAmount;
+      expect(makerBalanceB).to.equal(receiveAmount);
+    });
   });
+
 });
