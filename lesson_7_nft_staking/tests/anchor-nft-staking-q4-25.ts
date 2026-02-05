@@ -258,8 +258,6 @@ describe("anchor-nft-staking-q4-25", () => {
         .signers([user])
         .rpc();
 
-      console.log(`Unstake tx: ${tx}`);
-
       // Verify stake account is closed
       try {
         await program.account.stakeAccount.fetch(stakeAccountPda);
@@ -299,7 +297,7 @@ describe("anchor-nft-staking-q4-25", () => {
         .claim()
         .accountsStrict({
           user: user.publicKey,
-          rewardsAta: rewardsAtaPda,
+          userAta: rewardsAtaPda,
           config: configPda,
           userAccount: userAccountPda,
           rewardMint: rewardMintPda,

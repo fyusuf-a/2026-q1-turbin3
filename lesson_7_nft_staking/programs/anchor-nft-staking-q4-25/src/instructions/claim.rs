@@ -49,7 +49,7 @@ impl<'info> Claim<'info> {
         let cpi_accounts = MintTo {
             mint: self.reward_mint.to_account_info(),
             to: self.user_ata.to_account_info(),
-            authority: self.user_ata.to_account_info(),
+            authority: self.config.to_account_info(),
         };
 
         let config_key = self.config.key();
@@ -60,7 +60,9 @@ impl<'info> Claim<'info> {
         ]];
         let cpi_context = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
 
-        mint_to(cpi_context, self.user_account.points.into())?;
+        let minted_quantity = (self.user_account.points as u64) * (self.reward_mint.decimals as u64);
+
+        mint_to(cpi_context, minted_quantity)?;
 
         self.user_account.points = 0;
 

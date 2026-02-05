@@ -41,12 +41,13 @@ use crate::{
     pub stake_account: Account<'info, StakeAccount>,
 
     #[account(
-        seeds = [b"config".as_ref(), config.key().as_ref()],
+        seeds = [b"config".as_ref()],
         bump = config.bump,
     )]
     pub config: Account<'info, StakeConfig>,
 
     #[account(
+        mut,
         seeds = [b"user".as_ref(), user.key().as_ref()],
         bump = user_account.bump,
     )]

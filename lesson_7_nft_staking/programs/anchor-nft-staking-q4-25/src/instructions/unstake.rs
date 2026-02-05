@@ -39,12 +39,13 @@ use crate::{
     pub stake_account: Account<'info, StakeAccount>,
 
     #[account(
-        seeds = [b"config".as_ref(), config.key().as_ref()],
+        seeds = [b"config".as_ref()],
         bump = config.bump,
     )]
     pub config: Account<'info, StakeConfig>,
 
     #[account(
+        mut,
         seeds = [b"user".as_ref(), user.key().as_ref()],
         bump = user_account.bump,
     )]
@@ -63,7 +64,7 @@ use crate::{
         let time_elapsed = Clock::get()?.unix_timestamp - self.stake_account.staked_at;
         const SECONDS_IN_DAY: i64 = 24 * 60 * 60;
         let days_elapsed = u32::try_from(time_elapsed / SECONDS_IN_DAY)?;
-        require!(days_elapsed > self.config.freeze_period, StakeError::FreezePeriodNotPassed);
+        require!(days_elapsed >= self.config.freeze_period, StakeError::FreezePeriodNotPassed);
 
         let points_earned: u32 = days_elapsed * (self.config.points_per_stake as u32);
         self.user_account.points = self.user_account.points.saturating_add(points_earned);
@@ -79,7 +80,7 @@ use crate::{
             .asset(&self.asset.to_account_info())
             .collection(Some(&self.collection.to_account_info()))
             .payer(&self.user.to_account_info())
-            .authority(None)
+            .authority(Some(&self.stake_account.to_account_info()))
             .system_program(&self.system_program.to_account_info())
             .plugin(Plugin::FreezeDelegate(FreezeDelegate { frozen: false }))
             .invoke_signed(signer_seeds)?;
