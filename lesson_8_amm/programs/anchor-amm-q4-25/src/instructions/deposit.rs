@@ -1,11 +1,11 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token::{mint_to, transfer, Mint, MintTo, Token, TokenAccount, Transfer},
+    token::{mint_to, Mint, MintTo, Token, TokenAccount},
 };
 use constant_product_curve::ConstantProduct;
 
-use crate::{errors::AmmError, state::Config};
+use crate::{errors::AmmError, state::Config, utils::{PRECISION, deposit_tokens}};
 
 #[derive(Accounts)]
 pub struct Deposit<'info> {
@@ -43,20 +43,20 @@ pub struct Deposit<'info> {
         associated_token::mint = mint_x,
         associated_token::authority = user,
     )]
-    pub user_x: Account<'info, TokenAccount>,
+    pub user_x: Box<Account<'info, TokenAccount>>,
     #[account(
         mut,
         associated_token::mint = mint_y,
         associated_token::authority = user,
     )]
-    pub user_y: Account<'info, TokenAccount>,
+    pub user_y: Box<Account<'info, TokenAccount>>,
     #[account(
         init_if_needed,
         payer = user,
         associated_token::mint = mint_lp,
         associated_token::authority = user,
     )]
-    pub user_lp: Account<'info, TokenAccount>,
+    pub user_lp: Box<Account<'info, TokenAccount>>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
     pub associated_token_program: Program<'info, AssociatedToken>,
@@ -83,7 +83,7 @@ impl<'info> Deposit<'info> {
                     self.vault_y.amount,
                     self.mint_lp.supply,
                     amount,
-                    6,
+                    PRECISION as u32,
                 )
                 .unwrap();
                 (amounts.x, amounts.y)
@@ -102,27 +102,10 @@ impl<'info> Deposit<'info> {
 
     pub fn deposit_tokens(&self, is_x: bool, amount: u64) -> Result<()> {
         let (from, to) = match is_x {
-            true => (
-                self.user_x.to_account_info(),
-                self.vault_x.to_account_info(),
-            ),
-            false => (
-                self.user_y.to_account_info(),
-                self.vault_y.to_account_info(),
-            ),
+            true => (&self.user_x, &self.vault_x),
+            false => (&self.user_y, &self.vault_y),
         };
-
-        let cpi_program = self.token_program.to_account_info();
-
-        let cpi_accounts = Transfer {
-            from,
-            to,
-            authority: self.user.to_account_info(),
-        };
-
-        let ctx = CpiContext::new(cpi_program, cpi_accounts);
-
-        transfer(ctx, amount)
+        deposit_tokens(from, to, &self.token_program, amount)
     }
 
     pub fn mint_lp_tokens(&self, amount: u64) -> Result<()> {
