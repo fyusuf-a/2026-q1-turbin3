@@ -13,6 +13,12 @@ pub struct RefundBet<'info> {
     pub house: UncheckedAccount<'info>,
     #[account(
         mut,
+        seeds = [b"player_vault", house.key().as_ref(), player.key().as_ref(), bet.seed.to_le_bytes().as_ref()],
+        bump
+    )]
+    pub player_vault: SystemAccount<'info>,
+    #[account(
+        mut,
         seeds = [b"vault", house.key().as_ref()],
         bump
     )]
@@ -21,7 +27,7 @@ pub struct RefundBet<'info> {
         mut,
         close = player,
         has_one = player,
-        seeds = [b"bet", player.key().as_ref(), vault.key().as_ref(), bet.seed.to_le_bytes().as_ref()],
+        seeds = [b"bet", house.key().as_ref(), player.key().as_ref(), bet.seed.to_le_bytes().as_ref()],
         bump = bet.bump
     )]
     pub bet: Account<'info, Bet>,
@@ -29,16 +35,24 @@ pub struct RefundBet<'info> {
 }
 
 impl<'info> RefundBet<'info> {
-    pub fn refund_bet(&mut self, bumps: &RefundBetBumps) -> Result<()> {
+    pub fn refund_bet(&mut self) -> Result<()> {
         let slot = Clock::get()?.slot;
-        require!((self.bet.slot - slot) > 1000, DiceError::TimeoutNotReached);
+        require!(slot > self.bet.slot + 1000, DiceError::TimeoutNotReached);
+
+        let balance = self.player_vault.to_account_info().lamports();
+
         let accounts = Transfer {
-            from: self.vault.to_account_info(),
+            from: self.player_vault.to_account_info(),
             to: self.player.to_account_info(),
         };
 
-        let signer_seeds: &[&[&[u8]]] =
-            &[&[b"vault", &self.house.key().to_bytes(), &[bumps.vault]]];
+        let signer_seeds: &[&[&[u8]]] = &[&[
+            b"player_vault",
+            &self.house.key().to_bytes(),
+            &self.player.key().to_bytes(),
+            &self.bet.seed.to_le_bytes(),
+            &[self.bet.bump]
+        ]];
 
         let ctx = CpiContext::new_with_signer(
             self.system_program.to_account_info(),
@@ -46,6 +60,6 @@ impl<'info> RefundBet<'info> {
             signer_seeds,
         );
 
-        transfer(ctx, self.bet.amount)
+        transfer(ctx, balance)
     }
 }

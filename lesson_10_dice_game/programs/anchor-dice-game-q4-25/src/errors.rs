@@ -6,7 +6,7 @@ pub enum DiceError {
     BumpError,
     #[msg("Overflow")]
     Overflow,
-    #[msg("Minimum bet is 0.01 Sol")]
+    #[msg("Bet too low")]
     MinimumBet,
     #[msg("Maximum bet exceeded")]
     MaximumBet,

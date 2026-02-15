@@ -5,8 +5,6 @@ pub mod state;
 use anchor_lang::prelude::*;
 
 use instructions::*;
-use state::*;
-use error::*;
     
 declare_id!("9BHtScpF7YkbHiBFvuJxLsKD1BnLnWbVVjxRvkT1ewMR");
 
@@ -23,12 +21,12 @@ pub mod anchor_dice_game_q4_25 {
         ctx.accounts.deposit(amount)
     }
 
-    // pub fn resolve_bet(ctx: Context<ResolveBet>, sig: Vec<u8>) -> Result<()> {
-    //     ctx.accounts.verify_ed25519_signature(&sig)?;
-    //     ctx.accounts.resolve_bet(&sig, &ctx.bumps)
-    //}
+    pub fn resolve_bet(ctx: Context<ResolveBet>, sig: Vec<u8>) -> Result<()> {
+         ctx.accounts.verify_ed25519_signature(&sig)?;
+         ctx.accounts.resolve_bet(&sig, &ctx.bumps)
+    }
 
     pub fn refund_bet(ctx: Context<RefundBet>) -> Result<()> {
-        ctx.accounts.refund_bet(&ctx.bumps)
+        ctx.accounts.refund_bet()
     }
 }
